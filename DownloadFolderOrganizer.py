@@ -1,7 +1,7 @@
 #Download Folder Organizer
-#Frank Greco 5/7/2026
-#Python 3.13
-
+#Frank Greco 5/7/26
+#Python3.13
+ 
 import pathlib #path(), .iterdir(), .suffix, .exists(), .mkdir(), is_file(), .is_dir()
 import shutil #move()
 import datetime #datetime.now(), strftime()
@@ -9,13 +9,17 @@ import sys
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-
-#commands needed
+ 
+#Locate download folder
+ 
 download_folder = pathlib.Path.home() / "Downloads" #path to download folder 
-dl = download_folder / "Logs" #Log folder
+dl = download_folder / "DownloadOrganizerLogs" #Log folder
 dl.mkdir(parents=True, exist_ok=True) #make a download and logs subfolder folder if either doesn't exist
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") #get date time
-process_log = dl / f"log_{timestamp}.txt" #the log
+month_year = datetime.datetime.now().strftime("%B%Y") #get month and year for subdirectory (e.g., May2026)
+month_year_folder = dl / month_year #create path for month/year subfolder
+month_year_folder.mkdir(exist_ok=True) #create the month/year subfolder if it doesn't exist
+process_log = month_year_folder / f"log_{timestamp}.txt" #the log placed inside month/year subfolder
 folders_dir = download_folder / "Folders" #downloaded folders folder
 folders_dir.mkdir(exist_ok=True) #make a downloaded folders folder subfolder folder if it doesn't exist
  
@@ -52,35 +56,65 @@ else:
     messagebox.showerror("Error", f"Logs folder not accessible.\n\nCheck error log in {process_log}")
     root.destroy()
     sys.exit() #exit program for this error
- 
-#set up dictionary
-#documents> pdf, docx, txt | Excel>xlsx, xls, csv | Images |jpg, png, gif | Archives > zip, rar | Executables exe>msi | Code > py, js, html, etc
+
+#set up nested dictionary structure
+#Main Category > Subcategory > File Extensions
 file_categories = {
-    ".txt": "Documents",
-    ".docx": "Documents",
-    ".pdf": "Documents",
-    ".json": "Documents",
-    ".xml": "Documents",
-    ".xlsx": "Excel",
-    ".xls": "Excel",
-    ".csv": "Excel",
-    ".jpg": "Images",
-    ".jpeg": "Images",
-    ".png": "Images",
-    ".gif": "Images",
-    ".paint": "Images",
-    ".zip": "Archives",
-    ".rar": "Archives",
-    ".7z": "Archives",
-    ".exe": "Executables",
-    ".msi": "Executables",
-    ".py": "Code",
-    ".cs": "Code",
-    ".js": "Code",
-    ".html": "Code",
-    ".sql": "Code"
+    "Documents": {
+        "WordFiles": [".docx", ".doc"],
+        "PDFs": [".pdf"],
+        "TextFiles": [".txt", ".rtf"]
+    },
+    "Excel": {
+        "Spreadsheets": [".xlsx", ".xls"],
+        "CSVFiles": [".csv"]
+    },
+    "Images": {
+        "Photos": [".jpg", ".jpeg", ".png", ".svg"],
+        "GIFs": [".gif"], 
+        "Paint": [".paint"]
+    },
+    "Archives": {
+        "ZipFiles": [".zip"],
+        "RarFiles": [".rar"],
+        "SevenZip": [".7z"]
+    },
+    "Executables": {
+        "Installers": [".exe", ".msi"]
+    },
+    "Programming": {
+        "Python": [".py"],
+        "C#": [".cs"],
+        "Java": [".java", ".class"],
+        "C and C++": [".cpp", ".c", ".h", ".cxx"],
+        "Ruby": [".rb"],
+        "Swift": [".swift"],
+        "Go": [".go"],
+        "Rust": [".rs"],
+        "PHP": [".php", ".phtml"]
+    },
+    "Web Dev and Markup": {
+        "Javascript": [".js", ".mjs"],
+        "HTML": [".html"],
+        "CSS": [".css"],
+        "JSON": [".json", ".jsonId"],
+        "XML": [".xml"],
+        "Markdown": [".md"],
+        "Sass": [".scss", ".sass"]
+    },
+    "ScriptsAndConfig":{
+        "Shell": [".sh"],
+        "Windows Batch file": [".bat", ".cmd"],
+        "Database": [".sql"],
+        "Initialization Config": [".ini"],
+        "YAML Config": [".yaml", ".yml"]
+    },
+    "Media": {
+        "Audio": [".mp3", ".wav"],
+        "Video": [".mp4", ".avi", ".mov"]
+    }
 }
- 
+
 # Create progress window
 progress_root = tk.Tk()
 progress_root.title("Download Folder Organizer")
@@ -100,7 +134,7 @@ progress_root.update()
 for item in download_folder.iterdir(): #for every folder in the download folder
  
     # skip system/output folders
-    if item.name in {"Logs", "Folders", "Documents", "Excel", "Images", "Archives", "Executables", "Code", "Other"}: #if the folder is named one of these, ignore it
+    if item.name in {"DownloadOrganizerLogs", "Folders", "Documents", "Excel", "Images", "Archives", "Executables", "Code", "Other", "Programming", "Web Dev and Markup", "ScriptsAndConfig", "Media"}: #if the folder is named one of these, ignore it
         continue
  
     # Move folders (no internal inspection)
@@ -116,46 +150,82 @@ for item in download_folder.iterdir(): #for every folder in the download folder
             folder_failure_counter += 1
         continue
  
-#Read files for file type (not folders) For each file: detemine file extension 
-for file in download_folder.iterdir(): #for every file in the download folder, go through each one through iteration function interdir()
+#Recursive function to process files in all subdirectories
+def organize_files(search_folder):
+    global file_success_counter, file_failure_counter
     
-    # Skip system folders
-    if file.name in {"Logs", "Folders", "Documents", "Excel", "Images", "Archives", "Executables", "Code", "Other"}:
-        continue
-    
-    if file.is_file(): #If the file is a file
+    for item in search_folder.iterdir():
+        # Skip only the main category folders and system folders (allow searching in subcategories)
+        if item.name in {"DownloadOrganizerLogs", "Folders"}:
+            continue
+        
+        # If it's a directory, recursively search it
+        if item.is_dir():
+            organize_files(item)
+            continue
+        
+        # If it's a file, process it
+        if item.is_file():
+            fl = item
+            ext = item.suffix.lower()
  
-        fl = file #the files themselves
-        ext = file.suffix.lower() #get the file suffix aka the file type and make sure it's transposed to all lower case
+            with open(process_log, "a") as f:
+                f.write(f"{timestamp}: {fl} is file type {ext} \n")
  
-        with open(process_log, "a") as f: #open up the log
-            f.write(f"{timestamp}: {fl} is file type {ext} \n") #log the file to to the file type. 
+            # Find the main category and subcategory
+            main_category = "Other"
+            sub_category = "Other"
+            
+            for category, subcategories in file_categories.items():
+                for subcat, extensions in subcategories.items():
+                    if ext in extensions:
+                        main_category = category
+                        sub_category = subcat
+                        break
+                if main_category != "Other":
+                    break
  
-        category = file_categories.get(ext, "Other") #Match extension to category - No match assign to "other"
+            with open(process_log, "a") as f:
+                f.write(f"{timestamp}: File {fl} with type {ext} move to {main_category}/{sub_category} \n")
  
-        with open(process_log, "a") as f: #open up the log
-                    f.write(f"{timestamp}: File {fl} with type {ext} move to {category} \n") #log the file to to the file type. 
+            # Create main category folder
+            main_folder_path = download_folder / main_category
+            if not main_folder_path.exists():
+                main_folder_path.mkdir()
+                with open(process_log, "a") as f:
+                    f.write(f"{timestamp}: Creating main folder directory {main_folder_path}\n")
  
-        folder_path = download_folder / category #make a destination folder based in download folder and category like downloads/images etc
+            # For "Other" category, skip subcategory creation and move directly
+            if main_category == "Other":
+                destination = main_folder_path / item.name
+            else:
+                # Create subcategory folder for other categories
+                sub_folder_path = main_folder_path / sub_category
+                if not sub_folder_path.exists():
+                    sub_folder_path.mkdir()
+                    with open(process_log, "a") as f:
+                        f.write(f"{timestamp}: Creating subfolder directory {sub_folder_path}\n")
+                destination = sub_folder_path / item.name
+            
+            # Check if file is already in the correct location
+            if item == destination:
+                with open(process_log, "a") as f:
+                    f.write(f"{timestamp}: File {item} already in correct location {destination}\n")
+                continue
+            
+            try:
+                shutil.move(item, destination)
+                with open(process_log, "a") as f:
+                    f.write(f"{timestamp}: Moving {item} to {destination}\n")
+                file_success_counter += 1
  
-        if not folder_path.exists(): #If the folder path doesn't exist, 
-            folder_path.mkdir() #make a folder path
+            except Exception as e:
+                with open(process_log, "a") as f:
+                    f.write(f"{timestamp}: Unable to move {item} to {destination} \nError: {str(e)} \n")
+                file_failure_counter += 1
  
-        with open(process_log, "a") as f: #open up the log
-            f.write(f"{timestamp}: Creating folder directory {folder_path}") #log the new folder being created
- 
- 
-        destination = folder_path / file.name #make a final destination after the creation is done. Then we can move the file to this destination
-        try:
-            shutil.move(file, destination) #moving file
-            with open(process_log, "a") as f: #open up the log
-                f.write(f"{timestamp}: Moving {file} to {destination}") #log the file being moved
-            file_success_counter +=1 #add one to the success counter
- 
-        except Exception as e: 
-            with open(process_log, "a") as f: #open up the error log file
-                f.write(f"{timestamp}: Unable to move {file} to {destination} \nError: {str(e)} \n") #write error to the log
-            file_failure_counter +=1 #add one to the fail counter
+#Read files for file type (not folders) - searches in all subdirectories recursively
+organize_files(download_folder)
  
 with open(process_log, "a") as f: #write final log
      f.write(f"{timestamp}: File movement job complete. Download folder organized.\nTotal folders moved: {folder_success_counter}.\nTotal folders failed to move: {folder_failure_counter}\nTotal files moved: {file_success_counter}.\nTotal files failed to move: {file_failure_counter}")
