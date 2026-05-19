@@ -1,5 +1,5 @@
 ================================================================================
-DOWNLOAD FOLDER ORGANIZER v3.0
+DOWNLOAD FOLDER ORGANIZER v3.1.0
 ================================================================================
 
 DESCRIPTION:
@@ -12,38 +12,30 @@ etc.) for even better organization.
 Any folders that are not recognized system folders are moved to a "Folders" 
 subfolder for safekeeping.
 
-NEW IN v3.0: Intuitive GUI with menu-driven interface, powerful undo 
-functionality, and streamlined installer with desktop shortcut option.
+NEW IN v3.1.0: Fixed logging bug that showed files as moved when they weren't,
+and added dedicated undo logs for complete operation tracking.
 
 ================================================================================
-WHAT'S NEW IN v3.0:
+WHAT'S NEW IN v3.1.0:
 ================================================================================
 
- Lightweight GUI Interface:
-   - User-friendly graphical interface replaces command-line interaction
-   - Simple, intuitive design for easy navigation
-   - Progress window shows real-time organization status
-   - Summary window displays detailed results after completion
+ Fixed Organization Logging:
+   - Logs now only show files that actually moved on the current run
+   - Removed misleading entries for files already in correct location
+   - Cleaner, more accurate log files that reflect actual operations
+   - Improved log clarity for troubleshooting
 
- Main Menu with Feature Selection:
-   - Clean button-based menu to choose between operations
-   - Organize: Run the file organization process
-   - Undo: Reverse a previous organization using saved logs
-   - Easy to switch between features without restarting
+ Dedicated Undo Logs:
+   - Undo operations now create separate log files (format: Undo_YYYY-MM-DD_HH-MM-SS.txt)
+   - Complete audit trail of all undo actions
+   - Shows which files were successfully moved back and which failed
+   - Inverse logging format mirrors organize logs for consistency
+   - Tracks files that couldn't be found during undo operations
 
- Powerful Undo Feature:
-   - Reverse any previous organization operation
-   - Browse through your organization history in File Explorer
-   - Select the specific log file corresponding to the organization you want to undo
-   - Automatically restores files to their original locations
-   - Complete audit trail of all undo operations in logs
-
- Professional Installer:
-   - Traditional .exe installer with setup wizard
-   - Simple step-by-step installation process
-   - Option to create desktop shortcut during installation
-   - Automatic program registration and configuration
-   - Includes uninstaller for clean removal
+ Enhanced Log Tracking:
+   - Better distinction between organize and undo operations
+   - Organized and undo logs maintained separately for clarity
+   - More accurate operation counters on subsequent runs
 
 ================================================================================
 FEATURES (COMPLETE LIST):
@@ -54,7 +46,8 @@ FEATURES (COMPLETE LIST):
 - Organize feature: Recursively searches and organizes files in all subdirectories
 - Undo feature: Reverses previous organization operations from saved logs
 - Detects and corrects misplaced files
-- Creates detailed logs organized by month and year
+- Creates detailed organize logs organized by month and year
+- Creates dedicated undo logs for all reversal operations
 - User-friendly progress window during organization
 - Summary window with detailed operation results
 - Detailed error messages for troubleshooting
@@ -62,6 +55,7 @@ FEATURES (COMPLETE LIST):
 - Support for 40+ file types across 9 main categories
 - Professional installer with optional desktop shortcut
 - Complete audit trail of all operations
+- Accurate logging that only tracks actual file movements
 
 File Categories and Subcategories:
 
@@ -123,7 +117,7 @@ Media:
 REQUIREMENTS:
 ================================================================================
 
-- Windows 7, 8, 10, or 11
+- Windows 7, 8, 10, 11, or 12
 - Approximately 30-60 MB of disk space for the application
 - Read/write access to your Downloads folder
 
@@ -158,8 +152,8 @@ ORGANIZE FEATURE:
    - Number of files that failed to move (with error reasons)
    - Number of folders moved to the Folders directory
    - Number of new category/subcategory folders created
-   - Number of files already in correct location
 4. Review your Downloads folder to see the organized files
+5. A new organize log file is created with timestamp
 
 UNDO FEATURE:
 
@@ -171,6 +165,7 @@ UNDO FEATURE:
 5. The application will process the undo operation
 6. A summary window will display the undo results
 7. All files from that organization will be restored to their original locations
+8. A new undo log file is created (format: Undo_YYYY-MM-DD_HH-MM-SS.txt)
 
 Note: The undo feature uses the detailed information saved in each log file to 
 precisely reverse file movements. It does not affect files moved by other 
@@ -180,27 +175,39 @@ organizations.
 LOGS:
 ================================================================================
 
-Each time you run the program (either Organize or Undo), a detailed log is 
-created in:
+Organize Logs:
+Each time you organize, a detailed log is created in:
   Downloads/DownloadOrganizerLogs/[MonthYear]/log_[DATE_TIME].txt
 
-Examples:
-  - Downloads/DownloadOrganizerLogs/May2026/log_2026-05-07_17-59-15.txt
-  - Downloads/DownloadOrganizerLogs/June2026/log_2026-06-03_10-15-22.txt
+Example:
+  - Downloads/DownloadOrganizerLogs/May2026/log_2026-05-19_09-29-58.txt
 
-These logs contain information about:
+Undo Logs:
+Each time you undo, a corresponding undo log is created in:
+  Downloads/DownloadOrganizerLogs/[MonthYear]/Undo_[DATE_TIME].txt
+
+Example:
+  - Downloads/DownloadOrganizerLogs/May2026/Undo_2026-05-19_09-35-17.txt
+
+Log Contents:
+Organize logs contain:
 - Files that were successfully moved
 - Files that failed to move (with error reasons)
 - Folders that were moved
 - Creation of new category/subcategory folders
-- Files already in correct location (detected on re-runs)
-- Undo operations and their results
+
+Undo logs contain:
+- Files successfully moved back to original location
+- Files that failed to move back (with error reasons)
+- Files that couldn't be found (already moved or deleted)
+- Operation summary with move/fail/skip counters
 
 You can use these logs to:
 - Troubleshoot issues or verify what the program did
 - Select a specific organization to undo
 - Maintain an audit trail of all file operations
 - Keep a record of your Downloads folder management history
+- Track exactly what happened during each organize/undo operation
 
 ================================================================================
 FILE ORGANIZATION STRUCTURE:
@@ -256,8 +263,11 @@ Downloads/
 │   └── Video/              (contains .mp4, .avi, .mov files)
 ├── Other/                  (contains files with unknown extensions)
 ├── Folders/                (contains any subdirectories from Downloads)
-└── DownloadOrganizerLogs/  (contains organization and undo logs)
+└── DownloadOrganizerLogs/  (contains organize and undo logs)
     ├── May2026/
+    │   ├── log_2026-05-19_09-29-58.txt
+    │   ├── Undo_2026-05-19_09-35-17.txt
+    │   └── ...
     ├── June2026/
     └── [MonthYear]/
 
@@ -285,10 +295,11 @@ A: Yes. Each organization is tracked separately in its own log file. You can
    undo an old organization after performing newer ones, some files may have 
    moved again, which could cause conflicts.
 
-Q: I ran it twice and it shows files moved again. Why?
-A: In v2.0+, the program detects when files are already in the correct location 
-   and skips them. Check the log for "already in correct location" messages. 
-   The file count should be 0 on subsequent runs if nothing changed.
+Q: Why don't my organize logs show files I know should have moved?
+A: In v3.1.0+, organize logs only show files that actually moved on that run.
+   Files already in the correct location are skipped. If nothing changed on 
+   that run, you should see 0 files moved. This ensures logs accurately reflect 
+   what happened.
 
 Q: Will undoing an organization delete my files?
 A: No. The undo feature only moves files back to their original locations. 
@@ -303,9 +314,10 @@ A: Currently, the categories are built into the program. To customize them,
    you would need to modify the source code available on GitHub.
 
 Q: How do I know what the program did?
-A: Check the log file in Downloads/DownloadOrganizerLogs/[MonthYear]/
-   Each run creates a new log with a timestamp. Both organize and undo operations 
-   are logged for your reference.
+A: Check the log files in Downloads/DownloadOrganizerLogs/[MonthYear]/
+   Each organize run creates a log_[TIMESTAMP].txt file
+   Each undo run creates an Undo_[TIMESTAMP].txt file
+   Both include detailed information about what happened and success/failure counts.
 
 Q: How do I uninstall the program?
 A: Use Windows Add/Remove Programs:
@@ -319,13 +331,22 @@ SYSTEM REQUIREMENTS:
 ================================================================================
 
 - Windows 7, 8, 10, 11, or 12
-- Approximately 50-100 MB of disk space for the application
+- Approximately 30-60 MB of disk space for the application
 - Read/write access to your Downloads folder
 - Administrator privileges may be required for installation
 
 ================================================================================
 CHANGELOG:
 ================================================================================
+
+v3.1.0 (May 19, 2026):
+  - Fixed logging bug where files already organized were shown as moved on subsequent runs
+  - Logs now accurately reflect only files that moved on the current run
+  - Added dedicated undo logs with separate Undo_[TIMESTAMP].txt format
+  - Improved log clarity and organization
+  - Better operation tracking with separate organize/undo log files
+  - Enhanced accuracy of operation counters
+  - Improved troubleshooting with more precise log information
 
 v3.0 (May 8, 2026):
   - Added lightweight GUI interface with main menu
@@ -370,8 +391,8 @@ Report bugs or request features through the project's issue tracker.
 VERSION:
 ================================================================================
 
-Version: 3.0
-Last Updated: May 8, 2026
+Version: 3.1.0
+Last Updated: May 19, 2026
 Python Version: 3.13
 License: MIT
 
