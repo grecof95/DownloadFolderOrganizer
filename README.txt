@@ -330,7 +330,7 @@ A: Use Windows Add/Remove Programs:
 SYSTEM REQUIREMENTS:
 ================================================================================
 
-- Windows 7, 8, 10, 11, or 12
+- Windows 7, 8, 10, or 11
 - Approximately 30-60 MB of disk space for the application
 - Read/write access to your Downloads folder
 - Administrator privileges may be required for installation
